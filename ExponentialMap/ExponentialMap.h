@@ -12,6 +12,7 @@
 
 #include <ICH.h>
 #include <unordered_map>
+#include <queue>
 
 // This class is exported from the ExponentialMap.dll
 class EXPONENTIALMAP_API CExponentialMap {
@@ -22,15 +23,33 @@ public:
 	// TODO: add your methods here.
 
 	void AssignMesh(CMesh *mesh_);
-	void BuildExponentialMap(unsigned centerId, double radius, unsigned covertedVertNum);
+	void BuildExponentialMap(unsigned centerId_, double radius_);
+
+	void OutputWithEmbeddedTexture(const char *fileName);
+	void OutputWithExternalTexture(const char *fileName);
+	void OutputGeodesicPath(const char *fileName);
 
 private:
+
 	ICH *ich;
 	CMesh *mesh;
 
 	std::unordered_map< int, std::pair<double, double> > texMap;
+	int centerId;
+	double radius;
+	unsigned gridNum;
 };
 
-extern EXPONENTIALMAP_API int nExponentialMap;
-
-EXPONENTIALMAP_API int fnExponentialMap(void);
+// typedef std::pair<int, double> VertDistPair;
+// 
+// class VertDistPairComp
+// {
+// public:
+// 	bool operator() (const VertDistPair& a, const VertDistPair& b) const { return a.second < b.second; }
+// };
+// 
+// typedef std::priority_queue< VertDistPair, std::vector<VertDistPair>, VertDistPairComp> FilterNearestVertPQ;
+// 
+// extern EXPONENTIALMAP_API int nExponentialMap;
+// 
+// EXPONENTIALMAP_API int fnExponentialMap(void);
