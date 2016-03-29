@@ -12,7 +12,8 @@
 
 #include <ICH.h>
 #include <unordered_map>
-#include <queue>
+#include <unordered_set>
+/*#include <queue>*/
 
 // This class is exported from the ExponentialMap.dll
 class EXPONENTIALMAP_API CExponentialMap {
@@ -24,18 +25,30 @@ public:
 
 	void AssignMesh(CMesh *mesh_);
 	void BuildExponentialMap(unsigned centerId_, double radius_);
+	void BuildExponentialMap(unsigned faceId_, Vector3D pos_, double radius_);
+
+	std::pair<unsigned, Vector3D> ExpMap(Vector2D pos2D);
+	Vector2D InvExpMap(unsigned fId, Vector3D pos);
 
 	void OutputWithEmbeddedTexture(const char *fileName);
 	void OutputWithExternalTexture(const char *fileName);
 	void OutputGeodesicPath(const char *fileName);
 
 private:
+	Vector3D calcBarycentricCoord(const Vector3D& p,
+		const Vector3D& p0, const Vector3D& p1, const Vector3D& p2);
+	Vector3D calcBarycentricCoord(const Vector2D& p,
+		const Vector2D& p0, const Vector2D& p1, const Vector2D& p2);
+private:
 
 	ICH *ich;
 	CMesh *mesh;
 
-	std::unordered_map< int, std::pair<double, double> > texMap;
+	std::unordered_map< int, Vector2D > texMap;
+	std::unordered_set< int > mappedFaces;
 	int centerId;
+	int faceId;
+	Vector3D centerPos;
 	double radius;
 	unsigned gridNum;
 };
