@@ -10,6 +10,9 @@
 #define EXPONENTIALMAP_API __declspec(dllimport)
 #endif
 
+#ifndef EXPONENTIALMAP_H
+#define EXPONENTIALMAP_H
+
 #include <ICH.h>
 #include <unordered_map>
 #include <unordered_set>
@@ -51,6 +54,9 @@ private:
 	Vector3D centerPos;
 	double radius;
 	unsigned gridNum;
+
+public:
+	bool silentMode = false;
 };
 
 // typedef std::pair<int, double> VertDistPair;
@@ -66,3 +72,5 @@ private:
 // extern EXPONENTIALMAP_API int nExponentialMap;
 // 
 // EXPONENTIALMAP_API int fnExponentialMap(void);
+
+#endif

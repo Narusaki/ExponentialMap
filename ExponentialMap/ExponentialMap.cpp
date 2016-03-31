@@ -42,6 +42,8 @@ void CExponentialMap::BuildExponentialMap(unsigned centerId_, double radius_)
 	centerId = centerId_;
 	radius = radius_;
 
+	texMap.clear(); mappedFaces.clear();
+
 	ich->Clear();
 	ich->AddSource(centerId);
 	ich->SetMaxGeodRadius(radius);
@@ -113,21 +115,50 @@ void CExponentialMap::BuildExponentialMap(unsigned faceId_, Vector3D pos_, doubl
 	centerPos = pos_;
 	radius = radius_;
 
+	texMap.clear(); mappedFaces.clear();
+
 	ich->Clear();
 	ich->AddSource(faceId, centerPos);
 	ich->SetMaxGeodRadius(radius);
 
-	cout << "Executing ICH..." << endl;
+	if (!silentMode)
+		cout << "Executing ICH..." << endl;
 	ich->Execute();
-	cout << "ICH is done." << endl;
+	if (!silentMode)
+		cout << "ICH is done." << endl;
 
-	cout << "Building exponential map..." << endl;
+	// refine mis-calculated vertices
+	for (int i = 0; i < mesh->m_nVertex; ++i)
+	{
+		auto &vertInfo = ich->GetVertInfo(i);
+		if (vertInfo.dist != DBL_MAX) continue;
+
+		for (int j = 0; j < mesh->m_pVertex[i].m_nValence; ++j)
+		{
+			double eL = mesh->m_pEdge[mesh->m_pVertex[i].m_piEdge[j]].m_length;
+			const auto &adjVertInfo = ich->GetVertInfo(mesh->m_pEdge[mesh->m_pVertex[i].m_piEdge[j]].m_iVertex[1]);
+
+			if (adjVertInfo.dist + eL >= vertInfo.dist) continue;
+
+			vertInfo.birthTime = adjVertInfo.birthTime;
+			vertInfo.dist = adjVertInfo.dist + eL;
+			vertInfo.isSource = false;
+			vertInfo.enterEdge = mesh->m_pVertex[i].m_piEdge[j];
+			vertInfo.pseudoSrcId = mesh->m_pEdge[mesh->m_pVertex[i].m_piEdge[j]].m_iVertex[1];
+			vertInfo.srcId = adjVertInfo.srcId;
+		}
+	}
+	if (!silentMode)
+		cout << "Building exponential map..." << endl;
 	Vector3D zAxis = mesh->m_pFace[faceId].m_vNormal;
 	Vector3D xAxis(1.0, 0.0, 0.0);
 	xAxis ^= zAxis; xAxis.normalize();
 	Vector3D yAxis = zAxis ^ xAxis; yAxis.normalize();
-	cout << "Frame at origin is:" << endl;
-	cout << xAxis << endl << yAxis << endl << zAxis << endl;
+	if (!silentMode)
+	{
+		cout << "Frame at origin is:" << endl;
+		cout << xAxis << endl << yAxis << endl << zAxis << endl;
+	}
 
 	for (int i = 0; i < mesh->m_nVertex; ++i)
 	{
@@ -174,28 +205,34 @@ void CExponentialMap::BuildExponentialMap(unsigned faceId_, Vector3D pos_, doubl
 		if (!allVertMapped) continue;
 		mappedFaces.insert(i);
 	}
-	cout << "Exponential map is built." << endl;
+	if (!silentMode)
+		cout << "Exponential map is built." << endl;
 }
 
 pair<unsigned, Vector3D> CExponentialMap::ExpMap(Vector2D pos2D)
 {
 	// TODO: compute expmap of pos
-	unsigned fId; Vector3D pos3D;
+	unsigned fId = -1; Vector3D pos3D;
+	double minArea = DBL_MAX;
 	for (auto faceIter : mappedFaces)
 	{
 		Vector2D p[3];
 		for (int i = 0; i < 3; ++i)
 			p[i] = texMap[mesh->m_pFace[faceIter].m_piVertex[i]];
+		double curArea = fabs((p[1] - p[0]) ^ (p[2] - p[0])) / 2.0;
+		if (curArea > minArea) continue;
 		Vector3D baryCentricCoord = calcBarycentricCoord(pos2D, p[0], p[1], p[2]);
 		if (baryCentricCoord[0] < 0.0 || baryCentricCoord[1] < 0.0 || baryCentricCoord[2] < 0.0)
 			continue;
 		// since for the 2D case, a point is constrained on the plane, 
 		// we can terminate the searching once we find a face contain it, 
 		fId = faceIter;
+		pos3D.x = 0.0; pos3D.y = 0.0; pos3D.z = 0.0;
 		for (int i = 0; i < 3; ++i)
 			pos3D += baryCentricCoord[i] * mesh->m_pVertex[mesh->m_pFace[faceIter].m_piVertex[i]].m_vPosition;
-		break;
+		minArea = curArea;
 	}
+	assert(fId != -1);
 	return make_pair(fId, pos3D);
 }
 
