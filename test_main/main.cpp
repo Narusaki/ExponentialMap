@@ -88,11 +88,11 @@ int main(int argc, char **argv)
 	expMap->OutputWithExternalTexture(externalFile.c_str());
 	cout << "Outputing done." << endl;
 
-// 	string pathFile = argv[1];
-// 	pathFile = pathFile.substr(0, pathFile.rfind(".")) + ".arbcenter" + argv[2] + ".paths.obj";
-// 	cout << "Outputing geodesic paths..." << endl;
-// 	expMap->OutputGeodesicPath(pathFile.c_str());
-// 	cout << "Output done." << endl;
+	string pathFile = argv[1];
+	pathFile = pathFile.substr(0, pathFile.rfind(".")) + ".arbcenter" + argv[2] + ".paths.obj";
+	cout << "Outputing geodesic paths..." << endl;
+	expMap->OutputGeodesicPath(pathFile.c_str());
+	cout << "Output done." << endl;
 
 	delete expMap;
 	delete mesh;

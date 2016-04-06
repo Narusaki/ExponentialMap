@@ -49,8 +49,8 @@ private:
 
 	std::unordered_map< int, Vector2D > texMap;
 	std::unordered_set< int > mappedFaces;
-	int centerId;
-	int faceId;
+	int centerId = -1;
+	int faceId = -1;
 	Vector3D centerPos;
 	double radius;
 	unsigned gridNum;
