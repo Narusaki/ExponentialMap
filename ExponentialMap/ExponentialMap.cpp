@@ -135,26 +135,26 @@ void CExponentialMap::BuildExponentialMap(unsigned faceId_, Vector3D pos_, doubl
 		cout << "ICH is done." << endl;
 
 	// refine mis-calculated vertices
-	for (int i = 0; i < mesh->m_nVertex; ++i)
-	{
-		auto &vertInfo = ich->GetVertInfo(i);
-		if (vertInfo.dist != DBL_MAX) continue;
-
-		for (int j = 0; j < mesh->m_pVertex[i].m_nValence; ++j)
-		{
-			double eL = mesh->m_pEdge[mesh->m_pVertex[i].m_piEdge[j]].m_length;
-			const auto &adjVertInfo = ich->GetVertInfo(mesh->m_pEdge[mesh->m_pVertex[i].m_piEdge[j]].m_iVertex[1]);
-
-			if (adjVertInfo.dist + eL >= vertInfo.dist) continue;
-
-			vertInfo.birthTime = adjVertInfo.birthTime;
-			vertInfo.dist = adjVertInfo.dist + eL;
-			vertInfo.isSource = false;
-			vertInfo.enterEdge = mesh->m_pVertex[i].m_piEdge[j];
-			vertInfo.pseudoSrcId = mesh->m_pEdge[mesh->m_pVertex[i].m_piEdge[j]].m_iVertex[1];
-			vertInfo.srcId = adjVertInfo.srcId;
-		}
-	}
+// 	for (int i = 0; i < mesh->m_nVertex; ++i)
+// 	{
+// 		auto &vertInfo = ich->GetVertInfo(i);
+// 		if (vertInfo.dist != DBL_MAX) continue;
+// 
+// 		for (int j = 0; j < mesh->m_pVertex[i].m_nValence; ++j)
+// 		{
+// 			double eL = mesh->m_pEdge[mesh->m_pVertex[i].m_piEdge[j]].m_length;
+// 			const auto &adjVertInfo = ich->GetVertInfo(mesh->m_pEdge[mesh->m_pVertex[i].m_piEdge[j]].m_iVertex[1]);
+// 
+// 			if (adjVertInfo.dist + eL >= vertInfo.dist) continue;
+// 
+// 			vertInfo.birthTime = adjVertInfo.birthTime;
+// 			vertInfo.dist = adjVertInfo.dist + eL;
+// 			vertInfo.isSource = false;
+// 			vertInfo.enterEdge = mesh->m_pVertex[i].m_piEdge[j];
+// 			vertInfo.pseudoSrcId = mesh->m_pEdge[mesh->m_pVertex[i].m_piEdge[j]].m_iVertex[1];
+// 			vertInfo.srcId = adjVertInfo.srcId;
+// 		}
+// 	}
 	if (!silentMode)
 		cout << "Building exponential map..." << endl;
 	Vector3D zAxis = mesh->m_pFace[faceId].m_vNormal;
@@ -247,8 +247,8 @@ Vector2D CExponentialMap::InvExpMap(unsigned fId, Vector3D pos)
 	// TODO: compute expmap^-1 of pos in face fId
 	if (mappedFaces.find(fId) == mappedFaces.end())
 	{
-		cout << "Face " << fId << " is not in the mapped faces set!";
-		return Vector2D();
+		/*cout << "Face " << fId << " is not in the mapped faces set!";*/
+		return Vector2D(DBL_MAX, DBL_MAX);
 	}
 	Vector3D p[3];
 	for (int i = 0; i < 3; ++i) p[i] = mesh->m_pVertex[mesh->m_pFace[fId].m_piVertex[i]].m_vPosition;
